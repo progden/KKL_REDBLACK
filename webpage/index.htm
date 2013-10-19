@@ -1,26 +1,73 @@
 <html>
 <head>
     <script src="./js/easeljs-0.7.0.min.js"></script>
+    <script src="./js/preloadjs-0.4.0.min.js"></script>
     <script>
         function init() {
-            var stage = new createjs.Stage("demoCanvas");
+            initCanvas001();
+            //initCanvas002();
+        }
 
-			var circle = new createjs.Shape();
-			circle.graphics.beginFill("red").drawCircle(0, 0, 50);
-			circle.x = 100;
-			circle.y = 100;
-			stage.addChild(circle);
+        function initCanvas001(){
+            var stage = new createjs.Stage("demoCanvas001");
 
-			stage.addChild(new createjs.Shape()).setTransform(200,200).graphics.f("red").dc(0,0,50);
-			stage.update();
+            var circle = new createjs.Shape();
+            circle.graphics.beginFill("red").drawCircle(0, 0, 50);
+            circle.x = 100;
+            circle.y = 100;
+            stage.addChild(circle);
 
-            alert("test");
+            stage.addChild(new createjs.Shape()).setTransform(200,200).graphics.f("red").dc(0,0,50);
+
+            // var mainLoop = function(){
+            //     circle.x = circle.x + 3;
+            //     if (circle.x > stage.canvas.width) { 
+            //         circle.x = 0; 
+            //     }
+            //     stage.update();
+
+            // };
+            // setInterval(mainLoop, 1);
+
+            createjs.Ticker.addEventListener("tick", tick);
+            createjs.Ticker.setFPS(40)
+            function tick(event) { 
+                //createjs.Ticker.removeAllEventListeners();
+                circle.x += event.delta/1000 * (stage.canvas.width/4);
+                if(circle.x > stage.canvas.width) circle.x = 0;
+                stage.update();
+            }
+        }
+        function initCanvas002(){
+            var stage = new createjs.Stage("demoCanvas002");
+            // grab canvas width and height for later calculations:
+            var w = stage.canvas.width;
+            var h = stage.canvas.height;
+
+            var manifest = [
+                {src:"img/blackball.png", id:"ball"}
+            ];
+            var loader = new createjs.LoadQueue(false);
+            var handleComplete = function(){
+                var data = new createjs.SpriteSheet({
+                        "images": [loader.getResult("ball")],
+                        "frames": {"regX": 0, "regY": 0, "width": 400, "height": 400, "count": 8},
+                        "animations": {"run": [0, 8, "run", 1.5]}
+                    });
+
+                var ball = new createjs.Sprite(data, "run");
+                ball.x = 50;
+                ball.y = 50;
+                stage.addChild(ball);
+            }
+            loader.addEventListener("complete", handleComplete);
+            loader.loadManifest(manifest);
         }
     </script>
 </head>
 <body onLoad="init();">
-    <canvas id="demoCanvas" width="500" height="300">
-        
-    </canvas>
+    <canvas id="demoCanvas002" width="500" height="300"></canvas>
+    <hr />
+    <canvas id="demoCanvas001" width="500" height="300"></canvas>
 </body>
 </html>
