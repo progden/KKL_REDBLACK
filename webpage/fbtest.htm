@@ -1,0 +1,184 @@
+<html>
+<head>
+	<script src="./js/jquery-1.7.1.min.js"></script>
+</head>
+<body>
+	<div id="fb-root"></div>
+	<script>
+		var appId = "384976964965909";
+		var loginId = null;
+	
+		window.fbAsyncInit = function() {
+			FB.init({
+				appId : appId, // App ID
+				status : true, // check login status
+				cookie : true, // enable cookies to allow the server to access the session
+				xfbml : true
+			// parse XFBML
+			});
+			
+			showAppId();
+			showLoginId();
+		};
+
+		// Load the SDK asynchronously
+		(function(d) {
+			var js, id = 'facebook-jssdk', ref = d
+					.getElementsByTagName('script')[0];
+			if (d.getElementById(id)) {
+				return;
+			}
+			js = d.createElement('script');
+			js.id = id;
+			js.async = true;
+			js.src = "//connect.facebook.net/zh_TW/all.js";
+			ref.parentNode.insertBefore(js, ref);
+		}(document));
+		
+		function checkStatus(){
+						
+			FB.login(function(response){
+				FB.getLoginStatus(function(response) {
+					
+					showStatus(response.status);
+					
+					if (response.status === 'not_authorized') { // 己登入未授權
+						alert("拜託授權阿大大!");
+					} else if (response.status === 'connected') { // 己登入facebook而且之前己登錄過這個應用程式 (並非同意取得權限, 所以還是會connected)
+							$("#login_info").append('</br>======================= Login Info =======================</br></br>');
+							$.each(response.authResponse, function( key, value ) {
+								$("#login_info").html($("#login_info").html() + key + ":  " + value + "<br\>");
+							});
+							$("#login_info").append('</br>======================= Login Info =======================</br></br>');
+							
+							loginId = response.authResponse.userID;
+							showLoginId();
+							getUserData(loginId);	
+							getFriendList(loginId);
+							
+							$("#start").toggle();
+							$("#leave").toggle();
+							
+					} else {  // 還沒登入
+						alert("拜託登入阿大大!");
+					}
+				});
+			}, {scope:'read_stream,status_update,publish_stream,read_friendlists'});
+			
+			
+		}
+		
+		function fbLogout(){//登出的動作
+			//FB.init({appId: appId});
+			FB.getLoginStatus(handleAuthResponse);
+		}
+		
+		function handleAuthResponse(response) {
+						
+		    // 沒有authResponse = 無法取得授權資料(沒有進入過遊戲)
+		    if (!response.authResponse) {
+		        return;
+		    }
+
+		    FB.logout();
+		    alert("Logout");
+		    showStatus(response.status);
+		    $("#start").toggle();
+			$("#leave").toggle();
+			$("div").html("");
+		}
+		
+		
+		function getUserData(uid) {
+			FB.api('/' + uid, function(response) {
+				
+				$("#user_info").append(
+						'</br>Good to see you,  ' + response.name + '.');
+				$("#user_info").append(
+						'</br></br>======================= User Data =======================</br>');
+				
+				$.each(response, function( key, value ) {
+					$("#user_info").html($("#user_info").html() + key + ":  " + value + "<br\>");
+				});
+				$("#user_info").append(
+				'</br>======================= User Data =======================</br>');
+				$("#user_info").toggle();
+				
+				//param ?width=200&height=200
+				//param ?type=[square,small,normal,large]		
+				var imgSrc = getPhotoSrc(uid);
+				$("#userImg").attr("src", imgSrc);
+			});
+		}
+		
+		function getFriendList(uid) {
+			FB.api('/'+ uid +'/friends', function(response) {
+				var friendList = response.data;				
+				$("#friendList").append('</br></br>======================= Friend List =======================</br>');
+				$.each(friendList, function(key, value) {
+					$("#friendList").html($("#friendList").html() +  value.name + "<br\>");
+					//$("#friendList").html($("#friendList").html() + "<img id=\"userImg\" src= "+ getPhotoSrc(value.id) +">"+ "<br\>");
+				});
+				$("#friendList").append('</br>======================= Friend List =======================</br>');
+			});
+		}
+
+		function share() {
+			FB.ui({
+				method : 'feed',
+				name : 'Facebook Dialogs',
+				link : 'http://localhost:8080/FB_TEST/',
+				caption : '測試一下',
+				description : '測試兩下測試兩下測試兩下'
+			}, function(response) {
+				if (response && response.post_id) {
+					alert('Post was published.');
+				} else {
+					alert('Post was not published.');
+				}
+			});
+		}
+
+		function showStatus(status) {
+			FB.getLoginStatus(function(response) {
+				showStatus(response.status);	
+			});			
+		}
+
+		function showStatus(status) {
+			$("#login_Status").html("<br\>Login Status:   " + status + "<br\>");
+		}
+		
+		function showLoginId(){
+			$("#loginId").html("loginId:   " +　loginId);
+		}
+		
+		function showAppId(){
+			$("#appId").html("appId:   " +　appId);
+		}
+		
+		function getPhotoSrc(uid) {
+			return "https://graph.facebook.com/" + uid + "/picture?type=large";
+		}
+	</script>
+
+	<!-- <fb:login-button autologoutlink="true" show-faces="true" width="200"
+		max-rows="1"></fb:login-button>
+ -->
+	<button id="start" style="display:inline;" onclick="checkStatus();">Start The Game</button>
+	<button id="leave" style="display:none;" onclick="fbLogout();">Leave the game</button>
+	<button id="share" onclick="share();">Share</button>
+	<button id="loginStatus" onclick="getStatuts();">login_status</button>
+
+	<div id="appId"></div>
+	<div id="loginId"></div>
+	<div id="login_Status"></div>
+	<div id="login_info"></div>
+	<div id="user_info" style="display: none">
+		login Success! <img id="userImg">
+	</div>
+	<div id="friendList"></div>
+
+
+</body>
+</html>
