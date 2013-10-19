@@ -5,7 +5,7 @@
     <script>
         function init() {
             initCanvas001();
-            //initCanvas002();
+            initCanvas002();
         }
 
         function initCanvas001(){
@@ -39,34 +39,59 @@
             }
         }
         function initCanvas002(){
+        	//initCanvas002();
             var stage = new createjs.Stage("demoCanvas002");
             // grab canvas width and height for later calculations:
             var w = stage.canvas.width;
             var h = stage.canvas.height;
+            
+         	// Define a spritesheet. Note that this data was exported by Zoë.
+			var ss2 = new createjs.SpriteSheet({
+				"framerate": 20,
+				"animations":{
+					"run": [0, 7, "run", 0.5]
+				},
+				"images": ["img/blackball.png"],
+				"frames": {
+					"height": 200,
+					"width": 200,
+					"regX": 0,
+					"regY": 0,
+					"count": 32
+				}
+			});
+         	var ss4 = new createjs.SpriteSheet({
+         		//"framerate": 20,
+				"animations":{
+					"blackball": [0, 7, "blackball"],
+					"redball": [8, 15, "redball"],
+					"yellowball": [16, 23, "yellowball"],
+					"greenball": [24, 31, "greenball"]
+				},
+				"images": ["img/blackball.png"],
+				"frames": {
+					"height": 200,
+					"width": 200,
+					"regX": 0,
+					"regY": 0,
+					"count": 32
+				}
+			});
 
-            var manifest = [
-                {src:"img/blackball.png", id:"ball"}
-            ];
-            var loader = new createjs.LoadQueue(false);
-            var handleComplete = function(){
-                var data = new createjs.SpriteSheet({
-                        "images": [loader.getResult("ball")],
-                        "frames": {"regX": 0, "regY": 0, "width": 400, "height": 400, "count": 8},
-                        "animations": {"run": [0, 8, "run", 1.5]}
-                    });
-
-                var ball = new createjs.Sprite(data, "run");
-                ball.x = 50;
-                ball.y = 50;
-                stage.addChild(ball);
-            }
-            loader.addEventListener("complete", handleComplete);
-            loader.loadManifest(manifest);
+			// Add Grant to the stage, and add it as a listener to Ticker to get updates each frame.
+			var s2 = new createjs.Sprite(ss2, "run")
+			s4 = new createjs.Sprite(ss4, "redball");
+			s2.x = 0;
+			s4.x = 300 ;
+			stage.addChild(s2);
+			stage.addChild(s4);
+			createjs.Ticker.setFPS(20);
+			createjs.Ticker.addEventListener("tick", stage);
         }
     </script>
 </head>
 <body onLoad="init();">
-    <canvas id="demoCanvas002" width="500" height="300"></canvas>
+    <canvas id="demoCanvas002" width="900" height="400"></canvas>
     <hr />
     <canvas id="demoCanvas001" width="500" height="300"></canvas>
 </body>

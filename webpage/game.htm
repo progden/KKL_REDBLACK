@@ -1,0 +1,29 @@
+<html>
+	<head>
+	    <script src="./js/easeljs-0.7.0.min.js"></script>
+	    <script src="./js/preloadjs-0.4.0.min.js"></script>
+		<script type="text/javascript">
+			var manifest = [
+                {src:"img/background.png", id:"background"},
+                {src:"img/balls.png", id:"balls"}
+            ];
+			
+			var init = function(){
+				var stage = new createjs.Stage("gameboard");
+				var handleComplete = function(){
+		            stage.addChild(loader.getResult("background"));
+		            stage.update();
+				}
+				
+				var loader = new createjs.LoadQueue(false);
+	            loader.addEventListener("complete", handleComplete);
+	            loader.loadManifest(manifest);
+			}
+		</script>
+	</head>
+	<body onload="init()">
+		<canvas id="gameboard" width="1152" height="720">
+		
+		</canvas>
+	</body>
+</html>
