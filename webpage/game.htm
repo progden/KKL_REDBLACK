@@ -1,22 +1,103 @@
 <html>
 	<head>
+		<script src="./js/jquery-1.7.1.min.js"></script>
 	    <script src="./js/easeljs-0.7.0.min.js"></script>
 	    <script src="./js/preloadjs-0.4.0.min.js"></script>
+	    <script src="./js/tweenjs-0.5.0.min.js"></script>
 		<script type="text/javascript">
+			var loader, stage ;
 			var manifest = [
                 {src:"img/background.png", id:"background"},
                 {src:"img/balls.png", id:"balls"}
             ];
 			
 			var init = function(){
-				var stage = new createjs.Stage("gameboard");
-				var handleComplete = function(){
-		            stage.addChild(loader.getResult("background"));
-		            stage.update();
+				var hdlrRsCmplt = function(){
+					// init background
+					bg = new createjs.Bitmap(loader.getResult("background"));
+					stage.addChild(bg);
+					
+					// init resource area
+		         	/* var  */ballsSSheet = new createjs.SpriteSheet({
+		         		"framerate": 8,
+						"images": [loader.getResult("balls")],
+						"animations":{
+							"blackball": [0, 7, "blackball"],
+							"rball": [8, 15, "rball"],
+							"gball": [16, 23, "gball"],
+							"bball": [24, 31, "bball"]
+						},
+						"frames": {
+							"height": 200,
+							"width": 200,
+							"regX": 0,
+							"regY": 0,
+							"count": 32
+						}
+					});
+					
+					var rBallSprite = new createjs.Sprite(ballsSSheet, "rball");
+					rBallSprite.initPos = {x: 60, y: 480};
+					rBallSprite.x = rBallSprite.initPos.x;
+					rBallSprite.y = rBallSprite.initPos.y;
+					rBallSprite.scaleX = 0.5;
+					rBallSprite.scaleY = 0.5;
+					regResourceDragEvent(rBallSprite);
+					stage.addChild(rBallSprite);
+
+					var gBallSprite = new createjs.Sprite(ballsSSheet, "gball");
+					gBallSprite.initPos = {x: 240, y: 350};
+					gBallSprite.x = gBallSprite.initPos.x;
+					gBallSprite.y = gBallSprite.initPos.y;
+					gBallSprite.scaleX = 0.5;
+					gBallSprite.scaleY = 0.5;
+					regResourceDragEvent(gBallSprite);
+					stage.addChild(gBallSprite);
+					
+					var bBallSprite = new createjs.Sprite(ballsSSheet, "bball");
+					bBallSprite.initPos = {x: 490, y: 350};
+					bBallSprite.x = bBallSprite.initPos.x;
+					bBallSprite.y = bBallSprite.initPos.y;;
+					bBallSprite.scaleX = 0.5;
+					bBallSprite.scaleY = 0.5;
+					regResourceDragEvent(bBallSprite);
+					stage.addChild(bBallSprite);
+
+					
+					// start loop
+					createjs.Ticker.timingMode = createjs.Ticker.RAF;
+					createjs.Ticker.addEventListener("tick", tick);
 				}
 				
-				var loader = new createjs.LoadQueue(false);
-	            loader.addEventListener("complete", handleComplete);
+				function regResourceDragEvent(target, area){
+					// using "on" binds the listener to the scope of the currentTarget by default
+					// in this case that means it executes in the scope of the button.
+					target.on("mousedown", function(evt) {
+						this.parent.addChild(this);
+						this.offset = {x:this.x-evt.stageX, y:this.y-evt.stageY};
+					});
+					
+					// the pressmove event is dispatched when the mouse moves after a mousedown on the target until the mouse is released.
+					target.on("pressmove", function(evt) {
+						this.x = evt.stageX+ this.offset.x;
+						this.y = evt.stageY+ this.offset.y;
+						// indicate that the stage should be updated on the next tick:
+					});
+					
+					target.on("pressup", function(){
+						createjs.Tween.get(this).to({x:this.initPos.x, y: this.initPos.y}, 300, createjs.Ease.cubicInOut);
+					});
+				}
+				
+				function tick(event) {
+					if(!createjs.Ticker.getPaused()){
+						stage.update(event);
+					}
+				}
+				stage = new createjs.Stage("gameboard");
+				
+				loader = new createjs.LoadQueue(false);
+	            loader.addEventListener("complete", hdlrRsCmplt);
 	            loader.loadManifest(manifest);
 			}
 		</script>
